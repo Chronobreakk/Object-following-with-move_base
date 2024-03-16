@@ -30,10 +30,14 @@ def calculate_middle_point():
     # 获取/dest的位置
     dest_position = [dest_pose.position.x, dest_pose.position.y, dest_pose.position.z]
 
+    middle_position = [0.3*(dest_position[1] - amcl_position[1])/((dest_position[1] - amcl_position[1])**2+(dest_position[0] - amcl_position[0])**2)**0.5, 
+                    0.3*(dest_position[0] - amcl_position[0])/((dest_position[1] - amcl_position[1])**2+(dest_position[0] - amcl_position[0])**2)**0.5, 
+                    0]
+
     # 计算中间点的位置
-    middle_position = [(amcl_position[0] + dest_position[0]) / 2,
-                       (amcl_position[1] + dest_position[1]) / 2,
-                       (amcl_position[2] + dest_position[2]) / 2]
+    #middle_position = [(amcl_position[0] + dest_position[0]) / 2,
+    #                   (amcl_position[1] + dest_position[1]) / 2,
+    #                   (amcl_position[2] + dest_position[2]) / 2]
 
     # 中间点的方向设置为与/amcl_pose相同
     middle_orientation = amcl_orientation
