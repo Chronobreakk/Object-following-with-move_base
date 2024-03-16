@@ -22,7 +22,12 @@ if __name__ == '__main__':
     mypose.pose.orientation.z=-0.009900646643846149
     mypose.pose.orientation.w=0.9999509873968992
 
-    while True:
+    update_count = 0
+    while update_count < 25:  # 只更新25次
         mypose.pose.position.x += 0.3
         turtle_vel_pub.publish(mypose) #发送自己设置的目标点
-        time.sleep(3)  # 暂停一秒
+        time.sleep(2)  # 暂停一秒
+        update_count += 1  # 更新计数器
+
+
+
