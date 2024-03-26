@@ -25,10 +25,10 @@ def calculate_middle_point():
     
     # 获取/amcl_pose的位置和方向
     amcl_position = [amcl_pose.pose.position.x, amcl_pose.pose.position.y, amcl_pose.pose.position.z]
-    dest_orientation = [dest_pose.orientation.x, dest_pose.orientation.y, dest_pose.orientation.z, dest_pose.orientation.w]
+    dest_orientation = [dest_pose.pose.orientation.x, dest_pose.pose.orientation.y, dest_pose.pose.orientation.z, dest_pose.pose.orientation.w]
     
     # 获取/dest的位置
-    dest_position = [dest_pose.position.x, dest_pose.position.y, dest_pose.position.z]
+    dest_position = [dest_pose.pose.position.x, dest_pose.pose.position.y, dest_pose.pose.position.z]
 
     middle_position = [dest_position[0]-(0.3*(dest_position[1] - amcl_position[1])/((dest_position[1] - amcl_position[1])**2+(dest_position[0] - amcl_position[0])**2)**0.5), 
                     dest_position[1]-(0.3*(dest_position[0] - amcl_position[0])/((dest_position[1] - amcl_position[1])**2+(dest_position[0] - amcl_position[0])**2)**0.5), 
@@ -46,7 +46,7 @@ def calculate_middle_point():
 
 def move_base_goal_publisher():
     rospy.init_node('move_base_goal_publisher', anonymous=True)
-    pub = rospy.Publisher('/move_base_simple/goal', PoseStamped, queue_size=10)
+    pub = rospy.Publisher('/tb3_1/move_base_simple/goal', PoseStamped, queue_size=10)
     rate = rospy.Rate(10) # 10hz
 
     while not rospy.is_shutdown():
@@ -68,8 +68,8 @@ def move_base_goal_publisher():
 
 if __name__ == '__main__':
     try:
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, amcl_pose_callback)
-        rospy.Subscriber('/move_base_simple/dest', PoseStamped, dest_pose_callback)
+        rospy.Subscriber('/tb3_1/amcl_pose', PoseWithCovarianceStamped, amcl_pose_callback)
+        rospy.Subscriber('/tb3_0/amcl_pose', PoseWithCovarianceStamped, dest_pose_callback)
         move_base_goal_publisher()
     except rospy.ROSInterruptException:
         pass

@@ -25,8 +25,9 @@ if __name__ == '__main__':
     update_count = 0
     while update_count < 22:  # 只更新25次
         mypose.pose.position.x += 0.3
+        mypose.pose.position.y += 0.15
         turtle_vel_pub.publish(mypose) #发送自己设置的目标点
-        time.sleep(4)  # 暂停一秒
+        time.sleep(2)  # 暂停一秒
         update_count += 1  # 更新计数器
 
 
