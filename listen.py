@@ -30,20 +30,22 @@ def calculate_middle_point():
     # 获取/dest的位置
     dest_position = [dest_pose.pose.position.x, dest_pose.pose.position.y, dest_pose.pose.position.z]
 
-    middle_position = [dest_position[0]-(0.3*(dest_position[1] - amcl_position[1])/((dest_position[1] - amcl_position[1])**2+(dest_position[0] - amcl_position[0])**2)**0.5), 
-                    dest_position[1]-(0.3*(dest_position[0] - amcl_position[0])/((dest_position[1] - amcl_position[1])**2+(dest_position[0] - amcl_position[0])**2)**0.5), 
-                    0]
+    # 计算从amcl_position到dest_position的向量
+    vector = [dest_position[0] - amcl_position[0], dest_position[1] - amcl_position[1], dest_position[2] - amcl_position[2]]
 
-    # 计算中间点的位置
-    #middle_position = [(amcl_position[0] + dest_position[0]) / 2,
-    #                   (amcl_position[1] + dest_position[1]) / 2,
-    #                   (amcl_position[2] + dest_position[2]) / 2]
+    # 计算向量的长度
+    length = (vector[0]**2 + vector[1]**2 + vector[2]**2)**0.5
+
+    # 单位化向量
+    unit_vector = [vector[0]/length, vector[1]/length, vector[2]/length]
+
+    # 计算middle_position
+    middle_position = [dest_position[0] - 0.6*unit_vector[0], dest_position[1] - 0.6*unit_vector[1], dest_position[2] - 0.6*unit_vector[2]]
 
     # 中间点的方向设置为与/amcl_pose相同
     middle_orientation = dest_orientation
 
     return middle_position, middle_orientation
-
 def move_base_goal_publisher():
     rospy.init_node('move_base_goal_publisher', anonymous=True)
     pub = rospy.Publisher('/tb3_1/move_base_simple/goal', PoseStamped, queue_size=10)
