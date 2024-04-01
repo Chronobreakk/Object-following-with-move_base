@@ -1,73 +1,35 @@
-#!/usr/bin/env python
-
 import rospy
-import tf
-from geometry_msgs.msg import PoseStamped
+import tf2_ros
 from geometry_msgs.msg import PoseWithCovarianceStamped
-from tf.transformations import euler_from_quaternion, quaternion_from_euler
-from nav_msgs.msg import Odometry
-from move_base_msgs.msg import MoveBaseActionGoal
+from tf2_geometry_msgs import do_transform_pose
 
-class RelativeGoalPublisher:
-    def __init__(self):
-        rospy.init_node('relative_goal_publisher')
+def pose_callback(msg):
+    # 创建tf Buffer
+    tf_buffer = tf2_ros.Buffer()
+    # 创建tf监听器
+    tf_listener = tf2_ros.TransformListener(tf_buffer)
 
-        # 订阅AMCL的位置
-        self.amcl_pose = None
-        rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.amcl_pose_callback)
+    # 等待tf树中的转换关系建立好
+    rospy.sleep(0.5)
 
-        # 订阅MoveBaseSimpleGoal话题
-        self.goal_pose = None
-        rospy.Subscriber('/move_base_simple/goal', PoseStamped, self.goal_pose_callback)
+    try:
+        # 获取地图到机器人底盘的变换关系
+        transform = tf_buffer.lookup_transform("base_link", msg.header.frame_id, rospy.Time(0), rospy.Duration(1.0))
+        
+        # 使用tf2库将位姿信息从地图坐标系转换到机器人底盘坐标系
+        transformed_pose = do_transform_pose(msg.pose, transform)
 
-        # 发布相对位置的话题
-        self.relative_goal_pub = rospy.Publisher('/relative_goal', PoseStamped, queue_size=10)
+        # 处理转换后的位姿信息，可以根据需要进行后续操作
+        print("Transformed Pose in base_link frame:")
+        print(transformed_pose)
 
-        self.tf_listener = tf.TransformListener()
-
-    def amcl_pose_callback(self, data):
-        self.amcl_pose = data
-
-    def goal_pose_callback(self, data):
-        self.goal_pose = data
-
-    def publish_relative_goal(self):
-        if self.amcl_pose and self.goal_pose:
-            try:
-                # 获取AMCL在base_link坐标系下的位置
-                (trans, rot) = self.tf_listener.lookupTransform('/base_link', self.amcl_pose.header.frame_id, rospy.Time(0))
-
-                # 获取AMCL的姿态
-                euler_angles = euler_from_quaternion(rot)
-
-                # 计算目标位置在base_link坐标系下的相对位置
-                relative_goal = PoseStamped()
-                relative_goal.header.frame_id = '/base_link'
-                relative_goal.header.stamp = rospy.Time.now()
-                relative_goal.pose.position.x = self.goal_pose.pose.position.x - trans[0]
-                relative_goal.pose.position.y = self.goal_pose.pose.position.y - trans[1]
-                relative_goal.pose.position.z = self.goal_pose.pose.position.z - trans[2]
-
-                # 旋转目标姿态到base_link坐标系下
-                (roll, pitch, yaw) = euler_angles
-                (relative_goal.pose.orientation.x,
-                 relative_goal.pose.orientation.y,
-                 relative_goal.pose.orientation.z,
-                 relative_goal.pose.orientation.w) = quaternion_from_euler(0, 0, yaw)
-
-                # 发布相对位置
-                self.relative_goal_pub.publish(relative_goal)
-
-            except (tf.LookupException, tf.ConnectivityException, tf.ExtrapolationException):
-                rospy.logwarn("Failed to transform goal pose to base_link")
+    except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+        rospy.logwarn("Failed to transform pose: %s", str(e))
 
 def main():
-    relative_goal_publisher = RelativeGoalPublisher()
-    rate = rospy.Rate(10)  # 10 Hz
-
-    while not rospy.is_shutdown():
-        relative_goal_publisher.publish_relative_goal()
-        rate.sleep()
+    rospy.init_node('pose_transformer')
+    rospy.Subscriber('amcl_pose', PoseWithCovarianceStamped, pose_callback)
+    rospy.spin()
 
 if __name__ == '__main__':
     main()

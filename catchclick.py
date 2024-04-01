@@ -1,51 +1,46 @@
-import yaml
 import rospy
-import geometry_msgs.msg as geometry_msgs
-import os
+from std_msgs.msg import Bool, Float32
+from geometry_msgs.msg import Twist
 
-class WaypointGenerator(object):
+class TrackerStatusHandler(object):
 
-    def __init__(self, filename):
-        # 通过订阅rviz发出的/clicked_point的rostopic，就可以获取鼠标点击的目标点了：
-        # Subscriber订阅/clicked_point的同时，交给作为callback函数的_process_pose去处理路标点：
-        self._sub_pose = rospy.Subscriber('clicked_point', geometry_msgs.PointStamped, self._process_pose, queue_size=1)
-        self._waypoints = []
-        self._filename = filename
+    def __init__(self):
+        self._sub_status = rospy.Subscriber('/tracker/status', Bool, self._process_status, queue_size=1)
+        self._sub_offset = rospy.Subscriber('/tracker/offset', Float32, self._process_offset, queue_size=1)
+        self._pub_cmd_vel = rospy.Publisher('/tb3_0/cmd_vel', Twist, queue_size=1)
+        self._sub_distance = rospy.Subscriber('/tracker/distance', Float32, self._process_distance, queue_size=1)
+        self._offset = 0.0
 
-    def _process_pose(self, msg):
-        p = msg.point
+    def _process_status(self, msg):
+        if msg.data:  # 如果状态为True
+            # 创建一个Twist消息，设置线速度和角速度
+            twist = Twist()
+            twist.angular.z = 0.3  # 设置一个适当的旋转速度
+            self._pub_cmd_vel.publish(twist)  # 发布消息
 
-        data = {}
-        data['frame_id'] = msg.header.frame_id
-        data['pose'] = {}
-        # 因为rviz输出的是2D Nav Goal所以只处理2维：
-        data['pose']['position'] = {'x': p.x, 'y': p.y, 'z': 0.0}
-        data['pose']['orientation'] = {'x': 0, 'y': 0, 'z': 0, 'w':1}
-        data['name'] = '%s_%s' % (p.x, p.y)
+        else:  # 如果状态为False
+            # 根据offset的值来决定旋转的方向
+            rospy.sleep(1)
+            twist = Twist()
+            if self._offset > 200:
+                twist.angular.z = -0.3
+            elif self._offset < -200:
+                twist.angular.z = 0.3
+            self._pub_cmd_vel.publish(twist)  # 发布消息
 
-        self._waypoints.append(data)
-        rospy.loginfo("Clicked : (%s, %s, %s)" % (p.x, p.y, p.z))
 
-    def _write_file(self):
-        ways = {}
-        ways['waypoints'] = self._waypoints
-        # 把目标点输出成yaml文件：
-        with open(self._filename, 'w') as f:
-            f.write(yaml.dump(ways, default_flow_style=False))
+    def _process_offset(self, msg):
+        self._offset = msg.data  # 更新offset的值‘
 
-    def spin(self):
-        rospy.spin()
-        self._write_file()
-
+    def _process_distance(self, msg):
+        if msg.data > 1.5:  # 如果距离大于1
+            # 创建一个Twist消息，设置线速度为0.5
+            twist = Twist()
+            twist.linear.x = 0.3
+            self._pub_cmd_vel.publish(twist)  # 发布消息
+    
 
 if __name__ == '__main__':
-
-    rospy.init_node('waypoint_generator')
-    filename = os.path.expanduser('~/points.yaml')
-
-    g = WaypointGenerator(filename)
-    rospy.loginfo('Initialized')
-    g.spin()
-    rospy.loginfo('ByeBye')
-
-#这样，我们就可以在rviz上选取一系列的目标点并保存成文件，然后每次发送给机器人同样的目标点做重复测试了。
+    rospy.init_node('tracker_status_handler')
+    handler = TrackerStatusHandler()
+    rospy.spin()
