@@ -1,7 +1,22 @@
 import rospy
 import tf2_ros
+import numpy as np
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose, Point, Quaternion, PoseStamped
 from tf2_geometry_msgs import do_transform_pose
+from std_msgs.msg import Float32
+
+# 初始化x和y的值
+x = 0.0
+y = 0.0
+
+# 创建订阅者的回调函数
+def distance_callback(msg):
+    global x
+    x = msg.data
+
+def offset_callback(msg):
+    global y
+    y = msg.data
 
 def transform_pose_to_map():
     # 创建tf Buffer
@@ -9,13 +24,22 @@ def transform_pose_to_map():
     # 创建tf监听器
     tf_listener = tf2_ros.TransformListener(tf_buffer)
 
+    # 创建订阅者
+    rospy.Subscriber("/tracker/distance", Float32, distance_callback)
+    rospy.Subscriber("/tracker/offset", Float32, offset_callback)
+
     # 等待tf树中的转换关系建立好
     rospy.sleep(0.5)
+    # 计算原点到点 (x, -y, 0) 的单位向量
+    norm = np.sqrt(x**2 + y**2)
+    unit_vector = np.array([x, -y]) / norm
 
+    # 计算距离点 (x, -y, 0) 为1的点的坐标
+    new_point = unit_vector * (norm - 1)
     # 创建一个PoseWithCovarianceStamped消息，该消息包含物体在camera_link坐标系中的位置和方向
     pose_msg = PoseWithCovarianceStamped()
-    pose_msg.header.frame_id = "tb3_0/camera_link"
-    pose_msg.pose.pose = Pose(Point(0.5, 0, 0), Quaternion(0, 0, 0, 1))
+    pose_msg.header.frame_id = "tb3_0/camera_depth_frame"
+    pose_msg.pose.pose = Pose(Point(new_point[0], new_point[1], 0), Quaternion(0, 0, 0, 1))
 
     try:
         # 获取camera_link到map的变换关系
