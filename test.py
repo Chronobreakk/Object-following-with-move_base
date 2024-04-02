@@ -33,6 +33,9 @@ def transform_pose_to_map():
     # 计算原点到点 (x, -y, 0) 的单位向量
     norm = np.sqrt(x**2 + y**2)
     unit_vector = np.array([x, -y]) / norm
+    if norm <= 1.2:
+        print("already close to the target")
+        return
 
     # 计算距离点 (x, -y, 0) 为1的点的坐标
     new_point = unit_vector * (norm - 1)
