@@ -71,5 +71,7 @@ def transform_pose_to_map():
 
 if __name__ == '__main__':
     rospy.init_node('pose_transformer')
-    transform_pose_to_map()
+    while not rospy.is_shutdown():
+        transform_pose_to_map()
+        rospy.sleep(0.7)  # 每秒更新一次
     rospy.spin()

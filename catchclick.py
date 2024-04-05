@@ -22,10 +22,12 @@ class TrackerStatusHandler(object):
             # 根据offset的值来决定旋转的方向
             rospy.sleep(1)
             twist = Twist()
-            if self._offset > 0.08:
-                twist.angular.z = -0.3
-            elif self._offset < -0.08:
-                twist.angular.z = 0.3
+            if -0.08 <= self._offset <= 0.08:
+                twist.linear.z = 0
+            elif self._offset > 0.1:
+                twist.angular.z = -0.15
+            elif self._offset < -0.1:
+                twist.angular.z = 0.15
             self._pub_cmd_vel.publish(twist)  # 发布消息
 
 
