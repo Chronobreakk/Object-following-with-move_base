@@ -15,7 +15,7 @@ class TrackerStatusHandler(object):
         if msg.data:  # 如果状态为True
             # 创建一个Twist消息，设置线速度和角速度
             twist = Twist()
-            twist.angular.z = -0.3  # 设置一个适当的旋转速度
+            twist.angular.z = 0.2  # 设置一个适当的旋转速度
             self._pub_cmd_vel.publish(twist)  # 发布消息
 
         else:  # 如果状态为False
@@ -35,7 +35,7 @@ class TrackerStatusHandler(object):
         self._offset = msg.data  # 更新offset的值‘
 
     def _process_distance(self, msg):
-        if msg.data > 2:  # 如果距离大于1
+        if msg.data > 1.5:  # 如果距离大于1
             # 创建一个Twist消息，设置线速度为0.5
             twist = Twist()
             twist.linear.x = 0.3
