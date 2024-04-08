@@ -1,6 +1,7 @@
 import rospy
 import tf2_ros
 import numpy as np
+import tf.transformations as tf_trans
 from geometry_msgs.msg import PoseWithCovarianceStamped, Pose, Point, Quaternion, PoseStamped
 from tf2_geometry_msgs import do_transform_pose
 from std_msgs.msg import Float32
@@ -39,10 +40,15 @@ def transform_pose_to_map():
 
     # 计算距离点 (x, -y, 0) 为1的点的坐标
     new_point = unit_vector * (norm - 1)
+    # 计算从(0,0)到(x,-y)的角度
+    angle = np.arctan2(-y, x)
+
+    # 使用tf库的Quaternion函数将角度转换为四元数
+    quaternion = tf_trans.quaternion_from_euler(0, 0, angle)
     # 创建一个PoseWithCovarianceStamped消息，该消息包含物体在camera_link坐标系中的位置和方向
     pose_msg = PoseWithCovarianceStamped()
     pose_msg.header.frame_id = "tb3_0/camera_depth_frame"
-    pose_msg.pose.pose = Pose(Point(new_point[0], new_point[1], 0), Quaternion(0, 0, 0, 1))
+    pose_msg.pose.pose = Pose(Point(new_point[0], new_point[1], 0), Quaternion(*quaternion))
 
     try:
         # 获取camera_link到map的变换关系
