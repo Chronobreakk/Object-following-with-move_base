@@ -1,5 +1,4 @@
-# Object-following-with-move_base
-
+# Perception of Autonomous Driving Platform with TrackingFunction
 ## Contents
 
 - **[About](#About)**
@@ -22,7 +21,8 @@
 
 Here is the demo video we apply this Project to the NUS ARC Whill
 <!-- > Video Presentation -->
-[![ROS SLAM, Perception, and Navigation based on Gazebo simulation](https://img.youtube.com/vi/WiEzSJmcEQE/0.jpg)](https://b23.tv/3KfQj2k)
+[![ROS SLAM, Perception, and Navigation based on Gazebo simulation](https://s2.loli.net/2024/04/20/I2sQSBXOrcJR5VP.jpg)](https://b23.tv/3KfQj2k)
+
 
 ## About
 This project is based on the NUS ME5400A Robotics Project 1, it aims make one turtlebot following another.
