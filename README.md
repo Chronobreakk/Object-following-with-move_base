@@ -84,8 +84,6 @@ The following steps would build a new ROS workspace, start a new terminal first:
 
 ```bash
 git clone https://github.com/Chronobreakk/ff_ros1_ws.git
-cd ~/ff_ros1_ws/src
-git clone https://github.com/eclipse-cyclonedds/cyclonedds -b releases/0.7.x
 ```
 
 Install all the dependencies through `rosdep`,
