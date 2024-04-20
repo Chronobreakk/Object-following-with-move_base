@@ -67,7 +67,7 @@ Message generation via `FleetMessages.idl` is done using `dds_idlc` from `Cyclon
 
 
 ### Turtlebot Simulation
-Start a new ROS 1 workspace, and pull it in your default ROS workspace,
+Start a new ROS 1 workspace, and pull it in your default ROS workspace, you could also visit this link to see the [official tutorials](https://emanual.robotis.com/docs/en/platform/turtlebot3/quick-start/#pc-setup) of using `Turtlebot3`, under `noetic`.
 
 ```bash
 mkdir -p ~/catkin_ws/src/turtlebot
@@ -80,11 +80,9 @@ catkin_make
 
 ### Multi Turtlebot Simulation
 
-Start a new ROS 1 workspace, and pull in the necessary repositories,
+The following steps would build a new ROS workspace, start a new terminal first:
 
 ```bash
-mkdir -p ~/ff_ros1_ws
-cd ~/ff_ros1_ws
 git clone https://github.com/Chronobreakk/ff_ros1_ws.git
 cd ~/ff_ros1_ws/src
 git clone https://github.com/eclipse-cyclonedds/cyclonedds -b releases/0.7.x
